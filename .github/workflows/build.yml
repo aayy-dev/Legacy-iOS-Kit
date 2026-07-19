@@ -40,11 +40,15 @@ jobs:
           mv ./exclude/bin/macos/arm64/aria2c ./exclude/bin/macos/arm64/jq ./bin/macos/arm64
           touch ./resources/new
 
-      - name: Zip files
-        run: zip -r ${{ github.event.repository.name }}_${{ env.VERSION_CURRENT }}.zip bin/ LICENSE resources/ restore.sh README.md
-
-      - name: Upload zip artifact
+      - name: Upload artifact
         uses: actions/upload-artifact@v7
         with:
-          name: artifact
-          path: ${{ github.event.repository.name }}_${{ env.VERSION_CURRENT }}.zip
+          # This name becomes the final zip name when you download it from GitHub
+          name: ${{ github.event.repository.name }}_${{ env.VERSION_CURRENT }}
+          # List the exact files and directories you want included in the download
+          path: |
+            bin/
+            LICENSE
+            resources/
+            restore.sh
+            README.md
