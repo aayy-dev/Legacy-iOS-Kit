@@ -15,6 +15,10 @@ jobs:
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
+      - uses: actions/upload-artifact@v7
+        with:
+          name: artifact
+          path: ${{ github.event.repository.name }}_${{ env.VERSION_CURRENT }}.zip
 
       - name: Create name version env
         run: |
@@ -42,31 +46,3 @@ jobs:
 
       - name: Zip files
         run: zip -r ${{ github.event.repository.name }}_${{ env.VERSION_CURRENT }}.zip bin/ LICENSE resources/ restore.sh README.md
-
-      - name: Remove all assets from latest release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          assets=$(gh release view latest --json assets -q '.assets[].name' || true)
-
-          if [[ -z "$assets" ]]; then
-            echo "No assets found on release 'latest'"
-            exit 0
-          fi
-
-          for asset in $assets; do
-            echo "Deleting asset: $asset"
-            gh release delete-asset latest "$asset" -R ${{ github.repository }} -y
-          done
-
-      - name: Update latest release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh release upload latest \
-            ${{ github.event.repository.name }}_${{ env.VERSION_CURRENT }}.zip \
-            --clobber -R ${{ github.repository }}
-
-          gh release edit latest \
-            --title "Latest-${{ env.VERSION_CURRENT }}" \
-            --target ${{ github.sha }} -R ${{ github.repository }}
